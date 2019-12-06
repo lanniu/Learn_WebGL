@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../style/index.css" />
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+  </body>
+  <script src="../lib/webgl-debug.js"></script>
+  <script src="../lib/webgl-utils.js"></script>
+  <script src="../lib/cuon-utils.js"></script>
+  <script>
+    const VSHADER_SOURCE = `
+        attribute vec4 a_Position;
+
+        void main() {
+            gl_Position = a_Position; // 去除了 gl_PointSise
+        }`
+    const FSHADER_SOURCE = `
+        void main() {
+            gl_FragColor = vec4(1, 1, 1, 1);
+        }`
+    const init = function() {
+      const canvas = document.querySelector('#myCanvas')
+      const gl = getWebGLContext(canvas)
+
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)
+      const n = initVertexBuffers(gl)
+
+      gl.clearColor(0, 0, 0, 0.5)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.drawArrays(gl.TRIANGLES, 0, n) // TRIANGLES 三角形
+    }
+    const initVertexBuffers = function(gl) {
+      const vertices = new Float32Array([0, 0.5, -0.5, -0.5, 0.5, -0.5])
+      const vertexBuffer = gl.createBuffer() // 创建缓冲区对象
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer) // 绑定缓冲区对象
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) // 向缓冲区写入数据
+      const a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) // 将缓冲区对象分配给a_Position
+      gl.enableVertexAttribArray(a_Position) // 连接a_Position变量分配给它的缓冲区对象
+
+      return 3
+    }
+  </script>
+</html>
