@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./style/index.css" />
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+  </body>
+  <script src="./lib/webgl-debug.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/cuon-utils.js"></script>
+  <script>
+    let init = function() {
+      const canvas = document.querySelector('#myCanvas')
+      const gl = getWebGLContext(canvas)
+
+      const VSHADER_SOURCE = `
+        attribute vec4 a_Position;
+
+        void main() {
+            gl_Position = a_Position;
+            gl_PointSize = 10.0;
+        }`
+
+      const FSHADER_SOURCE = `
+        precision mediump float; // 精度限定词
+        uniform vec4 u_FragColor;
+        
+        void main() {
+            gl_FragColor = u_FragColor;
+        }`
+
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)
+
+      gl.clearColor(0, 0, 0, 0.5)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      const points = []
+      const a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+      const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor')
+      const drawPonits = () => {
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        points.forEach(({ x, y, color }) => {
+          gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3])
+          gl.vertexAttrib2f(a_Position, x, y)
+          gl.drawArrays(gl.POINTS, 0, 1)
+        })
+      }
+
+      canvas.addEventListener('mouseup', ({ target, offsetX, offsetY }) => {
+        const rect = target.getBoundingClientRect()
+        const x = (offsetX - rect.width / 2) / (rect.width / 2)
+        const y = (rect.height / 2 - offsetY) / (rect.height / 2)
+
+        let color = []
+
+        if (x > 0 && y > 0) {
+          color = [1, 0, 0, 1]
+        } else if (x < 0 && y < 0) {
+          color = [0, 1, 0, 1]
+        } else if (x < 0) {
+          color = [0, 0, 1, 1]
+        } else {
+          color = [1, 1, 0, 1]
+        }
+
+        points.push({ x, y, color })
+        drawPonits()
+      })
+    }
+  </script>
+</html>

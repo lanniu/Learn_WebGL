@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas"></canvas>
+  </body>
+  <script src="./lib/webgl-debug.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/cuon-utils.js"></script>
+  <script>
+    let init = function() {
+      const canvas = document.querySelector('#myCanvas')
+      const gl = getWebGLContext(canvas)
+
+      console.log(gl)
+
+      gl.clearColor(0, 0, 0, .5)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+    }
+  </script>
+</html>

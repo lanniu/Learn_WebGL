@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas"></canvas>
+  </body>
+  <script src="./lib/webgl-debug.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/cuon-utils.js"></script>
+  <script>
+    // 顶点着色器
+    const VSHADER_SOURCE = `
+      void main() {
+        gl_Position = vec4(0.5, 0, 0, 1); // 设置坐标
+        gl_PointSize = 10.0; // 设置尺寸
+      }`
+    // 片元着色器
+    const FSHADER_SOURCE = `
+      void main() {
+        gl_FragColor = vec4(1, 1, 1, 1); // 设置颜色
+      }
+    `
+    let init = function() {
+      const canvas = document.querySelector('#myCanvas')
+      const gl = getWebGLContext(canvas)
+      
+      // 加载着色器
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)
+      // 设置清空颜色
+      gl.clearColor(0, 0, 0, 0.5)
+      // 清空颜色缓冲区
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      // 画图形
+      gl.drawArrays(gl.POINTS, 0, 1)
+    }
+  </script>
+</html>

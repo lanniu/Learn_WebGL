@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas"></canvas>
+  </body>
+  <script src="./lib/webgl-debug.js"></script>
+  <script src="./lib/webgl-utils.js"></script>
+  <script src="./lib/cuon-utils.js"></script>
+  <script>
+    // 顶点着色器
+    const VSHADER_SOURCE = `
+      attribute vec4 a_Position; // 声明一个attribute变量
+      attribute float a_PointSize; // 声明一个attribute变量
+      void main() {
+        gl_Position = a_Position; // 设置坐标
+        gl_PointSize = a_PointSize; // 设置尺寸
+      }`
+    // 片元着色器
+    const FSHADER_SOURCE = `
+      void main() {
+        gl_FragColor = vec4(1, 1, 1, 1); // 设置颜色
+      }`
+    let init = function() {
+      const canvas = document.querySelector('#myCanvas')
+      const gl = getWebGLContext(canvas)
+
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE) // 加载着色器
+      const a_Position = gl.getAttribLocation(gl.program, 'a_Position') // 获取a_Position变量地址
+      const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize') // 获取a_PointSize变量地址
+      const minus = (num) => Math.random() > 0.5 ? num : -num
+
+      setInterval(() => {
+        gl.vertexAttrib3f(a_Position, minus(Math.random()), minus(Math.random()), 0) // 为a_Position赋值
+        gl.vertexAttrib1f(a_PointSize, Math.random() * 20 + 1) // 为a_PointSize赋值
+        gl.clearColor(0, 0, 0, 0.5) // 设置清空颜色
+        gl.clear(gl.COLOR_BUFFER_BIT) // 清空颜色缓冲区
+        gl.drawArrays(gl.POINTS, 0, 1) // 画图形
+      }, 100)
+    }
+  </script>
+</html>
