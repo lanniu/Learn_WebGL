@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../style/index.css" />
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+  </body>
+  <script src="../lib/webgl-debug.js"></script>
+  <script src="../lib/webgl-utils.js"></script>
+  <script src="../lib/cuon-utils.js"></script>
+  <script src="../lib/cuon-matrix.js"></script>
+  <script>
+    const VSHADER_SOURCE = `
+            attribute vec4 a_Position;
+            attribute float a_PointSize;
+
+            void main() {
+                gl_Position = a_Position;
+                gl_PointSize = a_PointSize;
+            }`
+    const FSHADER_SOURCE = `
+            void main() {
+                gl_FragColor = vec4(1, 1, 1, 1);
+            }`
+    
+    const init = function() {
+      const canvas = document.querySelector('#myCanvas') // 获取到画布
+      const gl = getWebGLContext(canvas) // 获取 gl 对象
+
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE) // 初始化着色器
+      gl.clearColor(0, 0, 0, 0.5) // 设置清除颜色
+      const n = initVertexBuffers(gl) // 初始化缓存区
+    
+      gl.clear(gl.COLOR_BUFFER_BIT) // 清空画布
+      gl.drawArrays(gl.POINTS, 0, n) // 绘制三角形
+    }
+
+    const initVertexBuffers = function(gl) {
+      const verticesSizes = new Float32Array([
+        0, 0.7, 10, 
+        -0.5, -0.5, 20, 
+        0.5, -0.5, 30
+      ])
+      const vertexSizeBuffer = gl.createBuffer() // 创建缓冲区对象
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexSizeBuffer) // 绑定缓冲区对象
+      gl.bufferData(gl.ARRAY_BUFFER, verticesSizes, gl.STATIC_DRAW) // 向缓冲区写入数据
+      const a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+      const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize')
+      const FSIZE = verticesSizes.BYTES_PER_ELEMENT
+
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 3, 0) // 将缓冲区对象分配给a_Position
+      gl.enableVertexAttribArray(a_Position) // 连接a_Position变量分配给它的缓冲区对象
+      gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, FSIZE * 3, FSIZE * 2) // 将缓冲区对象分配给a_PointSize
+      gl.enableVertexAttribArray(a_PointSize) // 连接a_PointSize变量分配给它的缓冲区对象
+
+      return 3
+    }
+  </script>
+</html>
