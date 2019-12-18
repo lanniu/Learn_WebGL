@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="../style/index.css" />
+  </head>
+  <body onload="init()">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <div>
+      <button id="up">加速</button>
+      <button id="down">减速</button>
+    </div>
+  </body>
+  <script src="../lib/webgl-debug.js"></script>
+  <script src="../lib/webgl-utils.js"></script>
+  <script src="../lib/cuon-utils.js"></script>
+  <script src="../lib/cuon-matrix.js"></script>
+  <script>
+    const VSHADER_SOURCE = `
+            attribute vec4 a_Position;
+            uniform mat4 u_ModelMatrix; // 定义一个四阶变换矩阵变量
+
+            void main() {
+                gl_Position = u_ModelMatrix * a_Position;
+            }`
+    const FSHADER_SOURCE = `
+            void main() {
+                gl_FragColor = vec4(1, 1, 1, 1);
+            }`
+    let ANGLE_STEP = 45.0 // 每秒转动的角度
+    let g_last = Date.now() // 最近一次绘制时的时间
+
+    const init = function() {
+      const upButton = document.querySelector('#up')
+      const downButton = document.querySelector('#down')
+
+      upButton.addEventListener('click', () => {
+        if (ANGLE_STEP < 360) {
+          ANGLE_STEP += 5.0
+        } 
+      })
+      downButton.addEventListener('click', () => {
+        if (ANGLE_STEP > 0) {
+          ANGLE_STEP -= 5.0
+        }
+      })
+      const canvas = document.querySelector('#myCanvas') // 获取到画布
+      const gl = getWebGLContext(canvas) // 获取 gl 对象
+      const modelMatrix = new Matrix4() // 新建一个 4*4 的矩阵
+      let currentAngle = 0.0 // 保存当前的角度
+
+      initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE) // 初始化着色器
+      gl.clearColor(0, 0, 0, 0.5) // 设置清除颜色
+      const n = initVertexBuffers(gl) // 初始化缓存区
+      const u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix') // 获取变量地址
+      const tick = function() {
+        currentAngle = animate(currentAngle) // 获取当前的角度
+        draw(gl, n, currentAngle, u_ModelMatrix, modelMatrix) // 绘画图形
+        requestAnimationFrame(tick) // 让浏览器在下一次重绘之前调用该函数
+      }
+
+      tick() // 开始转起来吧
+    }
+
+    const animate = function(angle) {
+      const now = Date.now() // 获取当前时间
+      const elapsed = g_last - now // 获取距离上一次绘制的时间间隔
+
+      g_last = now // 刷新最新一次绘制的时间
+      return (angle + (ANGLE_STEP * elapsed) / 1000) % 360 // 计算当前时间的绘制角度
+    }
+
+    const draw = function(gl, n, currentAngle, u_ModelMatrix, modelMatrix) {
+      modelMatrix.setRotate(currentAngle, 0, 0, 1) // 设置偏转角度
+      modelMatrix.translate(0.35, 0, 0)
+      gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements) // 给 mat4 赋值
+      gl.clear(gl.COLOR_BUFFER_BIT) // 清空画布
+      gl.drawArrays(gl.TRIANGLES, 0, n) // 绘制三角形
+    }
+
+    const initVertexBuffers = function(gl) {
+      const vertices = new Float32Array([0, 0.7, -0.5, -0.5, 0.5, -0.5])
+      const vertexBuffer = gl.createBuffer() // 创建缓冲区对象
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer) // 绑定缓冲区对象
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW) // 向缓冲区写入数据
+      const a_Position = gl.getAttribLocation(gl.program, 'a_Position')
+
+      gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0) // 将缓冲区对象分配给a_Position
+      gl.enableVertexAttribArray(a_Position) // 连接a_Position变量分配给它的缓冲区对象
+
+      return 3
+    }
+  </script>
+</html>
